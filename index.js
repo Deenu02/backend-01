@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import productRouter from './routes/productRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import jwt from 'jsonwebtoken';
+import orderRouter from './routes/orderRoute.js';
 
 
 
@@ -49,10 +50,8 @@ mongoose.connect("mongodb+srv://admin:123@cluster0.cu2quqq.mongodb.net/?appName=
 
 app.use("/products", productRouter);
 app.use("/users",userRouter)
+app.use("/orders",orderRouter)
 
 app.listen(5000,()=>{
     console.log('server is running');
 });
-
-
-//mongodb+srv://admin:123@cluster0.cu2quqq.mongodb.net/?appName=Cluster0

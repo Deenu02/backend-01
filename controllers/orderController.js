@@ -47,6 +47,7 @@ export async function createOrder(req,res) {
                 res.status(404).json({
                     message : "Product with productId " + orderInfo.products[i].productId + "is not available right now"
                 })
+                return
             }
 
             products[i] = {

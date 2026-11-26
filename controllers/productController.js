@@ -14,10 +14,7 @@ export async function getProducts(req,res){
         }
         
     }catch(err){
-        res.json({
-            message : "Failed to get products",
-            error : err
-        })
+        res.status(500).json({ message: "Failed to get products" })
     }
 }
 
@@ -39,10 +36,11 @@ export function saveProduct(req,res){
             res.json({
                 message : "Product added successfully",
             })
-        }).catch(()=>{
-            res.json({
-                message : "Failed to add product"
-            })
+        }).catch(error => {
+            const status = error.code === 11000 ? 409 : error.name === "ValidationError" ? 400 : 500;
+            res.status(status).json({
+                message: status === 409 ? "Product ID already exists" : "Failed to add product"
+            });
         })
 
 }

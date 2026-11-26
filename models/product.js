@@ -10,6 +10,13 @@ const productSchema = mongoose.Schema({
         type : String,
         required : true
     },
+    category : {
+        type : String,
+        enum : ["Makeup", "Skin", "Hair & Body", "Fragrance"]
+    },
+    subcategory : {
+        type : String
+    },
     altNames : [
         {type : String}
     ],

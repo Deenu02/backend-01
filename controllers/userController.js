@@ -1,7 +1,6 @@
 import User from "../models/user.js"
 import bcrypt from "bcrypt"; 
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
 
 export function createUser(req,res){
     if (req.body.role == "admin"){
@@ -20,6 +19,12 @@ export function createUser(req,res){
         }
     }
 
+    if (typeof req.body.password !== "string" || !req.body.password ||
+        typeof req.body.email !== "string" || !req.body.email.trim() ||
+        typeof req.body.firstName !== "string" || !req.body.firstName.trim()) {
+        return res.status(400).json({ message: "First name, email and password are required" });
+    }
+
     const hashedPassword = bcrypt.hashSync(req.body.password, 10)
 
     const user = new User({
@@ -27,7 +32,7 @@ export function createUser(req,res){
         lastName : req.body.lastName,
         email : req.body.email,
         password : hashedPassword,
-        role : req.body.role
+        role : req.body.role === "admin" ? "admin" : "customer"
     })
 
     user.save().then(()=>{
@@ -36,10 +41,11 @@ export function createUser(req,res){
         })
     }
 ).catch(
-    ()=>{
-        res.json({
-            message : "failed to create user"
-        })
+    (error)=>{
+        const status = error.code === 11000 ? 409 : 500;
+        res.status(status).json({
+            message: status === 409 ? "An account already exists for this email" : "Failed to create user"
+        });
     }
 )
 }
@@ -47,6 +53,14 @@ export function createUser(req,res){
 export function loginUser(req,res){
     const email = req.body.email
     const password = req.body.password
+
+    if (typeof email !== "string" || !email.trim() || typeof password !== "string" || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    if (!process.env.JWT_KEY) {
+        return res.status(500).json({ message: "Login is not configured on the server" });
+    }
 
      User.findOne({email : email}).then(
         (user)=>{
@@ -81,7 +95,11 @@ export function loginUser(req,res){
                 }
             }
         }
-     )   //testing commit
+     ).catch(() => {
+        res.status(500).json({
+            message: "Login is temporarily unavailable. Please try again."
+        });
+     });
 }
 
 export function isAdmin(req){
